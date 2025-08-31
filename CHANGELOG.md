@@ -1,3 +1,7 @@
+### 2025.1
+- Add dimension sliders for height and radius
+- Removing unused vertical progress logic
+
 ### 2024.3.1-2
 - Updates to validation for custom image
 - Preventing black square for invalid image paths

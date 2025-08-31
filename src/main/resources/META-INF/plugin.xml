@@ -21,6 +21,12 @@
 
     <change-notes>
         <![CDATA[
+            <p>2025.1</p>
+            <ul>
+                <li>Add dimension sliders for height and radius</li>
+                <li>Removing unused vertical progress logic</li>
+            </ul>
+
             <p>2024.3.1-2</p>
             <ul>
                 <li>Removing deprecated usages</li>
