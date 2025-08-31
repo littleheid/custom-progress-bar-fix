@@ -22,4 +22,7 @@ class PersistentConfigs : BaseState() {
   var repaintInterval: Int by property(REPAINT_INTERVAL_DEFAULT)
   var isCustomImageEnabled: Boolean by property(false)
   var imagePath: String? by string(null)
+  var isCustomDimensionsEnabled: Boolean by property(false)
+  var height: Int by property(5)
+  var radius: Int by property(5)
 }

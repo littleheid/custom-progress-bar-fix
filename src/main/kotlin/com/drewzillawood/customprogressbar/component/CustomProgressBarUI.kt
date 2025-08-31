@@ -111,7 +111,7 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
         it.x.toFloat(),
         (it.y + (it.height - ph) / 2).toFloat() - SCALED_PROGRESSION_HEIGHT * 2,
         it.width.toFloat(),
-        SCALED_PROGRESSION_RADIUS,
+        SCALED_PROGRESSION_HEIGHT,
         SCALED_PROGRESSION_RADIUS
       )
     }
@@ -129,16 +129,27 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
 
     g2d.paint = GradientPaint(x1, y1, getIndeterminatePrimaryColor(), x2, y2, getIndeterminateSecondaryColor(), true)
     g2d.fill(getShapedRect(x, y, w, h, ar))
+
+    val dynamicHeight = JBUIScale.scale(getHeight().toFloat())
+    val dynamicRadius = JBUIScale.scale(getRadius().toFloat())
     g2d.fill(
       RoundRectangle2D.Float(
         0f * SCALED_MARGIN,
-        SCALED_PROGRESSION_HEIGHT * 2 * SCALED_MARGIN - 2,
+        (SCALED_PROGRESSION_HEIGHT * 2 * SCALED_MARGIN - 2) - ((dynamicHeight - SCALED_PROGRESSION_HEIGHT) / 2),
         JBUIScale.scale(r.width * 1f),
-        SCALED_PROGRESSION_HEIGHT,
-        SCALED_PROGRESSION_RADIUS,
-        SCALED_PROGRESSION_RADIUS
+        dynamicHeight,
+        dynamicRadius,
+        dynamicRadius
       )
     )
+  }
+
+  open fun getHeight(): Int {
+    return current.height
+  }
+
+  open fun getRadius(): Int {
+    return current.radius
   }
 
   private fun drawCustomImage(g2d: Graphics2D, c: JComponent, isIndeterminate: Boolean) {
@@ -254,9 +265,10 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
 
         val fullShape: Shape
         val coloredShape: Shape
-        val yOffset = r.y + (r.height - progressBar.preferredSize.height) / 2 - 2
-        fullShape = getShapedRect(r.x.toFloat(), yOffset.toFloat() + SCALED_PROGRESSION_HEIGHT * 2, r.width.toFloat(), SCALED_PROGRESSION_RADIUS, SCALED_PROGRESSION_RADIUS)
-        coloredShape = getShapedRect(r.x.toFloat(), yOffset.toFloat() + SCALED_PROGRESSION_HEIGHT * 2, amountFull.toFloat(), SCALED_PROGRESSION_RADIUS, SCALED_PROGRESSION_RADIUS)
+        val dynamicHeight = JBUIScale.scale(getHeight().toFloat())
+        val yOffset = r.y + (r.height - progressBar.preferredSize.height) / 2 - 2 - ((dynamicHeight - SCALED_PROGRESSION_HEIGHT) / 2)
+        fullShape = getShapedRect(r.x.toFloat(), yOffset + SCALED_PROGRESSION_HEIGHT * 2, r.width.toFloat(), dynamicHeight, getRadius().toFloat())
+        coloredShape = getShapedRect(r.x.toFloat(), yOffset + SCALED_PROGRESSION_HEIGHT * 2, amountFull.toFloat(), dynamicHeight, getRadius().toFloat())
         g2d.color = getDeterminateSecondaryColor()
         g2d.fill(fullShape)
         g2d.color = getDeterminatePrimaryColor()

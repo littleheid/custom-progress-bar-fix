@@ -34,6 +34,14 @@ open class CustomProgressBarDemoUI : CustomProgressBarUI() {
       ?.let { ImageLoader.loadFromUrl(File(it).toURI().toURL())
         ?.getScaledInstance(16, 16, Image.SCALE_SMOOTH) } ?: EMPTY_ICON.image)
 
+  override fun getHeight(): Int {
+    return currentDemo.height
+  }
+
+  override fun getRadius(): Int {
+    return currentDemo.radius
+  }
+
   override fun getIndeterminateSecondaryColor(): Color {
     return Color(currentDemo.myIndeterminateSecondaryColor)
   }

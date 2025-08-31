@@ -48,7 +48,6 @@ import java.awt.Graphics
 import java.awt.Image
 import java.io.File
 import java.nio.file.Paths
-import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.JCheckBox
 import javax.swing.JComponent
@@ -65,6 +64,7 @@ class CustomProgressBarConfigurable : SearchableConfigurable, CoroutineScope {
 
   private val CYCLE_TIME_DEFAULT = 800
   private val REPAINT_INTERVAL_DEFAULT = 50
+  private val DIMENSION_DEFAULT = 5
 
   private val getConfig = service<PersistentConfigsComponent>()
   private val getDemoConfig = service<PersistentDemoConfigsComponent>()
@@ -87,6 +87,9 @@ class CustomProgressBarConfigurable : SearchableConfigurable, CoroutineScope {
   private lateinit var inputFileTextFieldWithBrowseButton: TextFieldWithBrowseButton
   private lateinit var previewPanel: IconPreviewPanel
   private lateinit var customImageCheckBox: JCheckBox
+  private lateinit var heightJSlider: JSlider
+  private lateinit var radiusJSlider: JSlider
+  private lateinit var customDimensionsCheckBox: JCheckBox
 
   private lateinit var imageValidationTooltip: JComponent
 
@@ -178,10 +181,46 @@ class CustomProgressBarConfigurable : SearchableConfigurable, CoroutineScope {
           }
         }
       }
+      group ("Dimensions") {
+        panel {
+          row {
+            customDimensionsCheckBox = checkBox("Enable custom dimensions")
+              .bindSelected(current::isCustomDimensionsEnabled)
+              .component
+            customDimensionsCheckBox.addActionListener {
+              current.isCustomDimensionsEnabled = customDimensionsCheckBox.isSelected
+              if (customDimensionsCheckBox.isSelected.not()) {
+                heightJSlider.value = DIMENSION_DEFAULT
+                radiusJSlider.value = DIMENSION_DEFAULT
+              }
+            }
+          }
+          row {
+            panel {
+              row("Height:") {
+                heightJSlider = slider(0, 20, 1, 5)
+                  .bindValue(current::height)
+                  .component
+                heightJSlider.addChangeListener {
+                  current.height = heightJSlider.value
+                }
+              }
+              row("Radius:") {
+                radiusJSlider = slider(0, 20, 1, 5)
+                  .bindValue(current::radius)
+                  .component
+                radiusJSlider.addChangeListener {
+                  current.radius = radiusJSlider.value
+                }
+              }
+            }
+          }.visibleIf(customDimensionsCheckBox.selected)
+        }
+      }
       group("Image") {
         panel {
           row {
-            customImageCheckBox = checkBox("Enable Custom Image")
+            customImageCheckBox = checkBox("Enable custom image")
               .bindSelected(current::isCustomImageEnabled)
               .component
             customImageCheckBox.addActionListener {
