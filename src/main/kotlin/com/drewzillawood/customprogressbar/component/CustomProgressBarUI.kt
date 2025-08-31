@@ -25,7 +25,6 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.swing.JComponent
 import javax.swing.JProgressBar
-import javax.swing.SwingConstants
 import javax.swing.UIManager
 import kotlin.math.max
 import kotlin.math.min
@@ -60,11 +59,6 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
   override fun paintIndeterminate(g: Graphics?, component: JComponent?) {
     drawProgressBar(g, component) { c, g2d ->
       try {
-        if (progressBar.orientation != SwingConstants.HORIZONTAL || !c.componentOrientation.isLeftToRight) {
-          super.paintDeterminate(g, component)
-          return@drawProgressBar
-        }
-
         drawProgression(g2d, c)
 
         if (isCustomImageEnabled()) {
@@ -109,49 +103,28 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
       g2d.fill(r)
     }
 
-    val pw = progressBar.preferredSize.width
     val ph = progressBar.preferredSize.height
 
     JBInsets.removeFrom(r, progressBar.insets)
     val (x, y, w, h, ar) = r.let {
-      if (progressBar.orientation == SwingConstants.HORIZONTAL) {
-        listOf(
-          it.x.toFloat(),
-          (it.y + (it.height - ph) / 2).toFloat() - SCALED_PROGRESSION_HEIGHT * 2,
-          it.width.toFloat(),
-          SCALED_PROGRESSION_RADIUS,
-          SCALED_PROGRESSION_RADIUS
-        )
-      } else {
-        listOf(
-          (it.x + (it.width - pw) / 2).toFloat(),
-          it.y.toFloat(),
-          pw.toFloat(),
-          it.height.toFloat(),
-          it.height.toFloat()
-        )
-      }
+      listOf(
+        it.x.toFloat(),
+        (it.y + (it.height - ph) / 2).toFloat() - SCALED_PROGRESSION_HEIGHT * 2,
+        it.width.toFloat(),
+        SCALED_PROGRESSION_RADIUS,
+        SCALED_PROGRESSION_RADIUS
+      )
     }
 
     val step = JBUIScale.scale(6)
     val (x1, y1, x2, y2) = r.let {
-      if (progressBar.orientation == SwingConstants.HORIZONTAL) {
-        val y1 = (it.y + ph / 2).toFloat()
-        listOf(
-          (it.x + animationIndex * step * 2).toFloat(),
-          y1,
-          (it.x + frameCount * step + animationIndex * step * 2).toFloat(),
-          y1
-        )
-      } else {
-        val x1 = (it.x + pw / 2).toFloat()
-        listOf(
-          x1,
-          (it.y + animationIndex * step * 2).toFloat(),
-          x1,
-          (it.y + frameCount * step + animationIndex * step * 2).toFloat()
-        )
-      }
+      val y1 = (it.y + ph / 2).toFloat()
+      listOf(
+        (it.x + animationIndex * step * 2).toFloat(),
+        y1,
+        (it.x + frameCount * step + animationIndex * step * 2).toFloat(),
+        y1
+      )
     }
 
     g2d.paint = GradientPaint(x1, y1, getIndeterminatePrimaryColor(), x2, y2, getIndeterminateSecondaryColor(), true)
@@ -210,38 +183,22 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
   private fun drawIndeterminateString(g2d: Graphics2D) {
     val r = Rectangle(progressBar.size)
     if (progressBar.isStringPainted) {
-      if (progressBar.orientation == SwingConstants.HORIZONTAL) {
-        paintString(g2d, progressBar.insets.left, progressBar.insets.top, r.width, r.height, boxRect.x, boxRect.width)
-      } else {
-        paintString(g2d, progressBar.insets.left, progressBar.insets.top, r.width, r.height, boxRect.y, boxRect.height)
-      }
+      paintString(g2d, progressBar.insets.left, progressBar.insets.top, r.width, r.height, boxRect.x, boxRect.width)
     }
   }
 
   private fun paintString(g: Graphics2D, x: Int, y: Int, w: Int, h: Int, fillStart: Int, amountFull: Int) {
     val progressString = progressBar.string
     g.font = progressBar.font
-    var renderLocation = getStringPlacement(g, progressString, x, y, w, h)
+    val renderLocation = getStringPlacement(g, progressString, x, y, w, h)
     val oldClip = g.clipBounds
 
-    if (progressBar.orientation == SwingConstants.HORIZONTAL) {
-      g.color = selectionBackground
-      UIUtilities.drawString(progressBar, g, progressString, renderLocation.x, renderLocation.y)
+    g.color = selectionBackground
+    UIUtilities.drawString(progressBar, g, progressString, renderLocation.x, renderLocation.y)
 
-      g.color = selectionForeground
-      g.clipRect(fillStart, y, amountFull, h)
-      UIUtilities.drawString(progressBar, g, progressString, renderLocation.x, renderLocation.y)
-    } else { // VERTICAL
-      g.color = selectionBackground
-      val rotate = AffineTransform.getRotateInstance(Math.PI / 2)
-      g.font = progressBar.font.deriveFont(rotate)
-      renderLocation = getStringPlacement(g, progressString, x, y, w, h)
-      UIUtilities.drawString(progressBar, g, progressString, renderLocation.x, renderLocation.y)
-
-      g.color = selectionForeground
-      g.clipRect(x, fillStart, w, amountFull)
-      UIUtilities.drawString(progressBar, g, progressString, renderLocation.x, renderLocation.y)
-    }
+    g.color = selectionForeground
+    g.clipRect(fillStart, y, amountFull, h)
+    UIUtilities.drawString(progressBar, g, progressString, renderLocation.x, renderLocation.y)
     g.clip = oldClip
   }
 
@@ -259,11 +216,7 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
       return size
     }
     if (!c.isStringPainted) {
-      if (c.orientation == SwingConstants.HORIZONTAL) {
-        size.height = getStripeWidth()
-      } else {
-        size.width = getStripeWidth()
-      }
+      size.height = getStripeWidth()
     }
     return Dimension(size.width, (16 + MARGIN * 4).toInt())
   }
@@ -273,7 +226,7 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
     return if (ho != null) {
       try {
         JBUIScale.scale(ho.toString().toInt())
-      } catch (nfe: NumberFormatException) {
+      } catch (_: NumberFormatException) {
         JBUIScale.scale(DEFAULT_WIDTH)
       }
     } else {
@@ -301,16 +254,9 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
 
         val fullShape: Shape
         val coloredShape: Shape
-        val orientation = progressBar.orientation
-        if (orientation == SwingConstants.HORIZONTAL) {
-          val yOffset = r.y + (r.height - progressBar.preferredSize.height) / 2 - 2
-          fullShape = getShapedRect(r.x.toFloat(), yOffset.toFloat() + SCALED_PROGRESSION_HEIGHT * 2, r.width.toFloat(), SCALED_PROGRESSION_RADIUS, SCALED_PROGRESSION_RADIUS)
-          coloredShape = getShapedRect(r.x.toFloat(), yOffset.toFloat() + SCALED_PROGRESSION_HEIGHT * 2, amountFull.toFloat(), SCALED_PROGRESSION_RADIUS, SCALED_PROGRESSION_RADIUS)
-        } else {
-          val xOffset = r.x + (r.width - progressBar.preferredSize.width) / 2 - 2
-          fullShape = getShapedRect(xOffset.toFloat(), r.y.toFloat(), progressBar.preferredSize.width.toFloat(), r.height.toFloat(), progressBar.preferredSize.width.toFloat())
-          coloredShape = getShapedRect(xOffset.toFloat(), r.y.toFloat(), progressBar.preferredSize.width.toFloat(), amountFull.toFloat(), progressBar.preferredSize.width.toFloat())
-        }
+        val yOffset = r.y + (r.height - progressBar.preferredSize.height) / 2 - 2
+        fullShape = getShapedRect(r.x.toFloat(), yOffset.toFloat() + SCALED_PROGRESSION_HEIGHT * 2, r.width.toFloat(), SCALED_PROGRESSION_RADIUS, SCALED_PROGRESSION_RADIUS)
+        coloredShape = getShapedRect(r.x.toFloat(), yOffset.toFloat() + SCALED_PROGRESSION_HEIGHT * 2, amountFull.toFloat(), SCALED_PROGRESSION_RADIUS, SCALED_PROGRESSION_RADIUS)
         g2d.color = getDeterminateSecondaryColor()
         g2d.fill(fullShape)
         g2d.color = getDeterminatePrimaryColor()
