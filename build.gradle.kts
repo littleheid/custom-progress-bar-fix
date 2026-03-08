@@ -38,7 +38,7 @@ repositories {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellijPlatform {
     pluginConfiguration {
-        name = "Custom Progress Bar"
+        name = "Custom Progress Bar Fix"
         ideaVersion {
             sinceBuild = "243"
             untilBuild.set(provider { null })

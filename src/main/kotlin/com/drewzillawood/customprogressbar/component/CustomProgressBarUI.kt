@@ -11,10 +11,11 @@ import com.intellij.util.ui.JBInsets
 import com.intellij.util.ui.UIUtilities
 import java.awt.Color
 import java.awt.Dimension
-import java.awt.GradientPaint
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Image
+import java.awt.LinearGradientPaint
+import java.awt.MultipleGradientPaint
 import java.awt.Rectangle
 import java.awt.RenderingHints
 import java.awt.Shape
@@ -34,26 +35,23 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
   @Volatile
   private var indeterminateOffset = -20
 
-  private var velocity: Int
+  private var velocity: Int = 1
 
   private val DEFAULT_WIDTH = 4
 
   private var current = service<PersistentConfigsComponent>().state
 
-  init {
-    velocity = current.cycleTime / current.repaintInterval
-  }
-
   override fun updateIndeterminateAnimationIndex(startMillis: Long) {
-    val numFrames = current.cycleTime / current.repaintInterval
+    val numFrames = getSafeFrameCount()
     val timePassed = System.currentTimeMillis() - startMillis
-    this.animationIndex = (timePassed / current.repaintInterval.toLong() % numFrames.toLong()).toInt()
+    this.animationIndex = (timePassed / getSafeRepaintInterval().toLong() % numFrames.toLong()).toInt()
   }
 
   override fun installDefaults() {
     super.installDefaults()
-    UIManager.put("ProgressBar.repaintInterval", current.repaintInterval)
-    UIManager.put("ProgressBar.cycleTime", current.cycleTime)
+    velocity = getSafeAnimationVelocity()
+    UIManager.put("ProgressBar.repaintInterval", getSafeRepaintInterval())
+    UIManager.put("ProgressBar.cycleTime", getSafeCycleTime())
   }
 
   override fun paintIndeterminate(g: Graphics?, component: JComponent?) {
@@ -116,18 +114,8 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
       )
     }
 
-    val step = JBUIScale.scale(6)
-    val (x1, y1, x2, y2) = r.let {
-      val y1 = (it.y + ph / 2).toFloat()
-      listOf(
-        (it.x + animationIndex * step * 2).toFloat(),
-        y1,
-        (it.x + frameCount * step + animationIndex * step * 2).toFloat(),
-        y1
-      )
-    }
-
-    g2d.paint = GradientPaint(x1, y1, getIndeterminatePrimaryColor(), x2, y2, getIndeterminateSecondaryColor(), true)
+    val y1 = (r.y + ph / 2).toFloat()
+    g2d.paint = createIndeterminateGradient(r.x.toFloat(), y1, r.width.toFloat())
     g2d.fill(getShapedRect(x, y, w, h, ar))
 
     val dynamicHeight = JBUIScale.scale(getHeight().toFloat())
@@ -186,9 +174,39 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
     indeterminateOffset += velocity
     if (indeterminateOffset >= progressBar.size.width + loadingImage.width) {
       indeterminateOffset = -loadingImage.width
-      velocity = current.cycleTime / current.repaintInterval
+      velocity = getSafeAnimationVelocity()
     }
     return indeterminateOffset.toFloat()
+  }
+
+  protected open fun getCycleTime(): Int {
+    return current.cycleTime
+  }
+
+  protected open fun getRepaintInterval(): Int {
+    return current.repaintInterval
+  }
+
+  private fun getSafeRepaintInterval(): Int {
+    return getRepaintInterval().coerceAtLeast(1)
+  }
+
+  private fun getSafeCycleTime(): Int {
+    return getCycleTime().coerceAtLeast(getSafeRepaintInterval())
+  }
+
+  private fun getSafeFrameCount(): Int {
+    return max(1, getSafeCycleTime() / getSafeRepaintInterval())
+  }
+
+  private fun getSafeAnimationVelocity(): Int {
+    return max(1, getSafeFrameCount() / 4)
+  }
+
+  private fun getIndeterminatePhase(): Float {
+    val cycleTime = getSafeCycleTime().toLong()
+    val timeInCycle = System.currentTimeMillis() % cycleTime
+    return timeInCycle.toFloat() / cycleTime.toFloat()
   }
 
   private fun drawIndeterminateString(g2d: Graphics2D) {
@@ -219,6 +237,54 @@ open class CustomProgressBarUI : DarculaProgressBarUI() {
 
   open fun getIndeterminateSecondaryColor(): Color {
     return Color(current.myIndeterminateSecondaryColor)
+  }
+
+  private fun createIndeterminateGradient(x: Float, y: Float, width: Float): LinearGradientPaint {
+    val primary = getIndeterminatePrimaryColor()
+    val secondary = getIndeterminateSecondaryColor()
+    val gradientWidth = max(JBUIScale.scale(120f), width * 0.45f)
+    val patternPeriod = gradientWidth * 2f
+    val offset = patternPeriod * getIndeterminatePhase()
+    val startX = x - gradientWidth + offset
+    val blend1 = blendColors(primary, secondary, 0.18f)
+    val blend2 = blendColors(primary, secondary, 0.36f)
+    val blend3 = blendColors(primary, secondary, 0.64f)
+    val blend4 = blendColors(primary, secondary, 0.82f)
+
+    return LinearGradientPaint(
+      startX,
+      y,
+      startX + gradientWidth,
+      y,
+      floatArrayOf(0f, 0.18f, 0.38f, 0.62f, 0.82f, 1f),
+      arrayOf(
+        primary,
+        blend1,
+        blend2,
+        blend3,
+        blend4,
+        secondary,
+      ),
+      MultipleGradientPaint.CycleMethod.REFLECT
+    )
+  }
+
+  private fun blendColors(start: Color, end: Color, t: Float): Color {
+    val easedT = smoothStep(t)
+    return Color(
+      lerp(start.red.toFloat(), end.red.toFloat(), easedT).toInt().coerceIn(0, 255),
+      lerp(start.green.toFloat(), end.green.toFloat(), easedT).toInt().coerceIn(0, 255),
+      lerp(start.blue.toFloat(), end.blue.toFloat(), easedT).toInt().coerceIn(0, 255),
+    )
+  }
+
+  private fun smoothStep(value: Float): Float {
+    val clamped = value.coerceIn(0f, 1f)
+    return clamped * clamped * (3f - 2f * clamped)
+  }
+
+  private fun lerp(start: Float, end: Float, t: Float): Float {
+    return start + (end - start) * t
   }
 
   override fun getPreferredSize(c: JComponent?): Dimension {

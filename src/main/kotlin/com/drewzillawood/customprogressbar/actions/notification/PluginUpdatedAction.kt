@@ -41,7 +41,7 @@ class PluginUpdatedAction : DumbAware {
     val notification = NotificationGroupManager.getInstance()
       .getNotificationGroup(CUSTOM_PROGRESS_BAR_UPDATED)
       .createNotification(
-        "Custom Progress Bar",
+        "Custom Progress Bar Fix",
         "Version: $version",
         NotificationType.INFORMATION,
       )

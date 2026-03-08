@@ -12,6 +12,11 @@
 
 # Transform your IDE experience with the 'Custom Progress Bar' plugin for IDEA based IDEs. Pick your colors, make progress unique, and code with style!
 
+## Notice
+- This repository is a modified/fix variant based on the original open source project by Drew Underwood.
+- Original project: https://github.com/Drewzillawood/intellij-custom-progress-bar
+- This repository keeps the original MIT License and original copyright notice.
+
 ## Changelog
 - [Change log](https://github.com/Drewzillawood/intellij-custom-progress-bar/blob/main/CHANGELOG.md)
 

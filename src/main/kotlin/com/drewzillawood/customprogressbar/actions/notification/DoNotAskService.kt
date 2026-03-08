@@ -3,7 +3,7 @@ package com.drewzillawood.customprogressbar.actions.notification
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationGroup
 
-const val CUSTOM_PROGRESS_BAR_UPDATED = "Custom Progress Bar updated"
+const val CUSTOM_PROGRESS_BAR_UPDATED = "Custom Progress Bar Fix updated"
 
 object DoNotAskService {
 

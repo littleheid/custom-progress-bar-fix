@@ -14,8 +14,8 @@ class CustomProgressBarListener : LafManagerListener, DynamicPluginListener, App
 
   private val PROGRESS_BAR_UI = "ProgressBarUI"
   private val CUSTOM_PROGRESS_BAR_UI_NAME = CustomProgressBarUIJava::class.java.name
-  private lateinit var previousProgressBar: Any
-  private lateinit var pluginId: PluginId
+  private val pluginId = PluginId.getId("com.drewzillawood.CustomProgressBar")
+  private var previousProgressBar: Any? = null
 
   override fun lookAndFeelChanged(source: LafManager) {
     updateProgressBarUi()
@@ -38,11 +38,16 @@ class CustomProgressBarListener : LafManagerListener, DynamicPluginListener, App
   }
 
   private fun updateProgressBarUi() {
+    if (previousProgressBar == null) {
+      previousProgressBar = UIManager.get(PROGRESS_BAR_UI)
+    }
     UIManager.put(PROGRESS_BAR_UI, CUSTOM_PROGRESS_BAR_UI_NAME)
     UIManager.getDefaults()[CUSTOM_PROGRESS_BAR_UI_NAME] = CustomProgressBarUIJava::class.java
   }
 
   private fun resetProgressBarUi() {
-    UIManager.put(PROGRESS_BAR_UI, previousProgressBar)
+    val originalProgressBarUi = previousProgressBar ?: return
+    UIManager.put(PROGRESS_BAR_UI, originalProgressBarUi)
+    previousProgressBar = null
   }
 }

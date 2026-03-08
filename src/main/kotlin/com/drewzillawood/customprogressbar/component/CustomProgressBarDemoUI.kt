@@ -7,22 +7,17 @@ import com.intellij.util.ImageLoader
 import java.awt.Color
 import java.awt.Image
 import java.io.File
-import javax.swing.UIManager
 
 open class CustomProgressBarDemoUI : CustomProgressBarUI() {
 
   private var currentDemo = service<PersistentDemoConfigsComponent>().state
 
-  override fun updateIndeterminateAnimationIndex(startMillis: Long) {
-    val numFrames = currentDemo.cycleTime / currentDemo.repaintInterval
-    val timePassed = System.currentTimeMillis() - startMillis
-    this.animationIndex = (timePassed / currentDemo.repaintInterval.toLong() % numFrames.toLong()).toInt()
+  override fun getCycleTime(): Int {
+    return currentDemo.cycleTime
   }
 
-  override fun installDefaults() {
-    super.installDefaults()
-    UIManager.put("ProgressBar.repaintInterval", currentDemo.repaintInterval)
-    UIManager.put("ProgressBar.cycleTime", currentDemo.cycleTime)
+  override fun getRepaintInterval(): Int {
+    return currentDemo.repaintInterval
   }
 
   override fun isCustomImageEnabled(): Boolean {

@@ -5,7 +5,7 @@
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Custom Progress Bar</name>
+    <name>Custom Progress Bar Fix</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="drew+custom-progress-bar-plugin@uwood.net" url="https://github.com/Drewzillawood/intellij-custom-progress-bar">Drew Underwood</vendor>
@@ -15,7 +15,7 @@
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description>
         <![CDATA[
-            Transform your IDE experience with the 'Custom Progress Bar' plugin for IDEA based IDEs. Pick your colors, make progress unique, and code with style!
+            Transform your IDE experience with the 'Custom Progress Bar Fix' plugin for IDEA based IDEs. Pick your colors, make progress unique, and code with style!
         ]]>
     </description>
 
@@ -143,12 +143,12 @@
                                  instance="com.drewzillawood.customprogressbar.settings.CustomProgressBarConfigurable"
                                  id="org.intellij.sdk.settings.AppSettingsConfigurable"
                                  dynamic="true"
-                                 displayName="Custom Progress Bar"/>
+                                 displayName="Custom Progress Bar Fix"/>
         <applicationService serviceImplementation="com.drewzillawood.customprogressbar.settings.CustomProgressBarSettings"/>
         <applicationService serviceImplementation="com.drewzillawood.customprogressbar.data.PersistentConfigsComponent"/>
         <applicationService serviceImplementation="com.drewzillawood.customprogressbar.data.PersistentDemoConfigsComponent"/>
         <postStartupActivity implementation="com.drewzillawood.customprogressbar.actions.notification.PluginUpdatedAction"/>
-        <notificationGroup displayType="STICKY_BALLOON" id="Custom Progress Bar updated"/>
+        <notificationGroup displayType="STICKY_BALLOON" id="Custom Progress Bar Fix updated"/>
     </extensions>
 
     <applicationListeners>
